@@ -1,4 +1,4 @@
-package com.ada.banco.infra.gateway.bd;
+package com.ada.banco.infra.bd;
 
 import com.ada.banco.domain.gateway.ContaGateway;
 import com.ada.banco.domain.model.Conta;
@@ -19,6 +19,16 @@ public class ContaGatewayDatabase implements ContaGateway {
 
     @Override
     public Conta salvar(Conta conta) {
+        return contaRepository.save(conta);
+    }
+
+    @Override
+    public Conta buscarPorId(Long id) {
+        return contaRepository.findByIdEquals(id);
+    }
+
+    @Override
+    public Conta atualizar(Conta conta) {
         return contaRepository.save(conta);
     }
 }

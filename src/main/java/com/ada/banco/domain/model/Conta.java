@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 public class Conta {
@@ -86,5 +87,30 @@ public class Conta {
 
     public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Conta conta = (Conta) o;
+        return Objects.equals(id, conta.id) && Objects.equals(agencia, conta.agencia) && Objects.equals(digito, conta.digito) && Objects.equals(saldo, conta.saldo) && Objects.equals(titular, conta.titular) && Objects.equals(cpf, conta.cpf);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, agencia, digito, saldo, titular, cpf);
+    }
+
+    @Override
+    public String toString() {
+        return "Conta{" +
+                "id=" + id +
+                ", agencia=" + agencia +
+                ", digito=" + digito +
+                ", saldo=" + saldo +
+                ", titular='" + titular + '\'' +
+                ", cpf='" + cpf + '\'' +
+                '}';
     }
 }

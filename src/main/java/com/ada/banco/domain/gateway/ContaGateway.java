@@ -5,4 +5,6 @@ import com.ada.banco.domain.model.Conta;
 public interface ContaGateway {
     Conta buscarPorCpf(String cpf);
     Conta salvar(Conta conta);
+    Conta buscarPorId(Long id);
+    Conta atualizar(Conta conta);
 }
