@@ -1,10 +1,9 @@
 package com.ada.banco.domain.usecase;
 
 import com.ada.banco.domain.exception.ContaJaExisteException;
-import com.ada.banco.domain.gateway.EmailGateway;
 import com.ada.banco.domain.model.Conta;
-import com.ada.banco.infra.bd.ContaGatewayDatabase;
-import com.ada.banco.infra.bd.ContaRepository;
+import com.ada.banco.infra.gateway.bd.ContaGatewayDatabase;
+import com.ada.banco.infra.gateway.bd.ContaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,18 +49,18 @@ public class ContaUseCaseTestH2 {
         Assertions.assertEquals("A conta ID: "+ contaTeste.getId() + " ja existe", throwable.getMessage());
     }
 
-//    @Test
-//    @DisplayName("Listar rodas as contas")
-//    public void deveListarContas() throws Exception {
-//        Conta conta = new Conta(3L,2L, 3L, BigDecimal.ZERO, "Luiz", "000.000.000-00");
-//        contaUseCase.criar(conta);
-//        conta = new Conta(4L,2L, 3L, BigDecimal.ZERO, "Luiz1", "000.000.000-00");
-//        contaUseCase.criar(conta);
-//        conta = new Conta(5L,2L, 3L, BigDecimal.ZERO, "Luiz2", "000.000.000-00");
-//        contaUseCase.criar(conta);
-//        List<Conta> contas = contaGateway.listar();
-//        for (Conta contaShow : contas) {
-//            System.out.println(contaShow);
-//        }
-//    }
+    @Test
+    @DisplayName("Listar rodas as contas")
+    public void deveListarContas() throws Exception {
+        Conta conta = new Conta(3L,2L, 3L, BigDecimal.ZERO, "Luiz", "000.000.000-00");
+        contaUseCase.criar(conta);
+        conta = new Conta(4L,2L, 3L, BigDecimal.ZERO, "Luiz1", "000.000.000-00");
+        contaUseCase.criar(conta);
+        conta = new Conta(1L,2L, 3L, BigDecimal.ZERO, "Luiz2", "000.000.000-00");
+        contaUseCase.criar(conta);
+        List<Conta> contas = contaGateway.listar();
+        for (Conta contaShow : contas) {
+            System.out.println(contaShow);
+        }
+    }
 }

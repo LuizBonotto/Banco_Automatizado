@@ -1,4 +1,4 @@
-package com.ada.banco.infra.bd;
+package com.ada.banco.infra.gateway.bd;
 
 import com.ada.banco.domain.model.Conta;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -11,7 +11,7 @@ import java.util.Objects;
 @Entity
 public class Conta {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private Long agencia;
     private Long digito;

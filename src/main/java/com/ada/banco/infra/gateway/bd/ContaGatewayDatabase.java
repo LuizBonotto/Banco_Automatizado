@@ -1,8 +1,10 @@
-package com.ada.banco.infra.bd;
+package com.ada.banco.infra.gateway.bd;
 
 import com.ada.banco.domain.gateway.ContaGateway;
 import com.ada.banco.domain.model.Conta;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class ContaGatewayDatabase implements ContaGateway {
@@ -30,5 +32,10 @@ public class ContaGatewayDatabase implements ContaGateway {
     @Override
     public Conta atualizar(Conta conta) {
         return contaRepository.save(conta);
+    }
+
+    @Override
+    public List<Conta> listar() {
+        return contaRepository.findAll();
     }
 }

@@ -1,7 +1,7 @@
 package com.ada.banco.infra.controller;
 
 import com.ada.banco.domain.model.Conta;
-import com.ada.banco.infra.bd.ContaRepository;
+import com.ada.banco.infra.gateway.bd.ContaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
