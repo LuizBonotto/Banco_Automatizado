@@ -96,8 +96,11 @@ public class ContaUseCase {
         return contaGateway.listar();
     }
 
-    public List<Conta> listarPorCpf(String cpf) {
-        return contaGateway.listarPorCpf(cpf);
+    public List<Conta> listarPorCpf(String cpf) throws ContaNaoExisteException {
+        List<Conta> contas = contaGateway.listarPorCpf(cpf);
+        if(contas.isEmpty()) {
+            throw new ContaNaoExisteException("A conta com CPF: " + cpf + " não existe");
+        }
+        return contas;
     }
-
 }

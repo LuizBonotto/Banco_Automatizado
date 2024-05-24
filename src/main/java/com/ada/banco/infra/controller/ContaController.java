@@ -1,10 +1,8 @@
 package com.ada.banco.infra.controller;
 
-import com.ada.banco.domain.gateway.ContaGateway;
+import com.ada.banco.domain.exception.ContaNaoExisteException;
 import com.ada.banco.domain.model.Conta;
 import com.ada.banco.domain.usecase.ContaUseCase;
-import com.ada.banco.infra.gateway.bd.ContaGatewayDatabase;
-import com.ada.banco.infra.gateway.bd.ContaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +28,14 @@ public class ContaController {
     }
 
     @GetMapping("/listar/{cpf}")
-    public ResponseEntity<List<Conta>> getByCpf(@PathVariable String cpf) {
-        List<Conta> contas = contaUseCase.listarPorCpf(cpf);
-        return new ResponseEntity<>(contas, HttpStatus.OK);
+    public ResponseEntity<?> getByCpf(@PathVariable String cpf) {
+        List<Conta> contas;
+        try {
+            contas = contaUseCase.listarPorCpf(cpf);
+            return new ResponseEntity<>(contas, HttpStatus.OK);
+        } catch (ContaNaoExisteException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PostMapping
