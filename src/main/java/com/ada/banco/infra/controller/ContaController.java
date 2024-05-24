@@ -49,4 +49,15 @@ public class ContaController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(novaConta);
     }
+
+    @PutMapping("/atualizar")
+    public ResponseEntity atualizar(@RequestBody Conta conta) throws Exception {
+        Long id = conta.getId();
+        try {
+            Conta contaAtualizada = contaUseCase.atualizar(id, conta);
+            return ResponseEntity.ok(contaAtualizada);
+        } catch (ContaNaoExisteException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }
