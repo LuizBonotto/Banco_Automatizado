@@ -10,4 +10,5 @@ public interface ContaGateway {
     Conta buscarPorId(Long id);
     Conta atualizar(Conta conta);
     List<Conta> listar();
+    List<Conta> listarPorCpf(String cpf);
 }

@@ -38,4 +38,11 @@ public class ContaGatewayDatabaseFake implements ContaGateway {
         contas.addAll(contaRepositoryFake.values());
         return contas;
     }
+
+    @Override
+    public List<Conta> listarPorCpf(String cpf) {
+        List<Conta> contas = new ArrayList<>();
+        contas.addAll(contaRepositoryFake.values());
+        return contas;
+    }
 }

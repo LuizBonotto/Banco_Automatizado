@@ -7,13 +7,17 @@ import com.ada.banco.domain.exception.ContasDiferentesException;
 import com.ada.banco.domain.gateway.ContaGateway;
 import com.ada.banco.domain.gateway.EmailGateway;
 import com.ada.banco.domain.model.Conta;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 public class ContaUseCase {
+    @Autowired
     private ContaGateway contaGateway;
+    @Autowired
     private EmailGateway emailGateway;
 
     public ContaUseCase(ContaGateway contaGateway, EmailGateway emailGateway) {
@@ -21,25 +25,6 @@ public class ContaUseCase {
         this.emailGateway = emailGateway;
     }
 
-    public Conta execute(Conta conta) throws Exception {
-        if(contaGateway.buscarPorCpf(conta.getCpf()) != null) {
-             throw new Exception("Usuario ja possui uma conta");
-        }
-
-        Conta novaConta = contaGateway.salvar(conta);
-        emailGateway.send(conta.getCpf());
-        return novaConta;
-    }
-
-    public Conta execute2(Conta conta, Boolean usuarioExiste) throws Exception {
-        if(usuarioExiste) {
-            throw new Exception("Usuario ja possui uma conta");
-        }
-
-        Conta novaConta = contaGateway.salvar(conta);
-        emailGateway.send(conta.getCpf());
-        return novaConta;
-    }
 
     public Conta criar(Conta conta) throws Exception {
         if(contaGateway.buscarPorId(conta.getId()) != null) {
@@ -106,4 +91,13 @@ public class ContaUseCase {
 
         return contaGateway.buscarPorId(id);
     }
+
+    public List<Conta> listar() {
+        return contaGateway.listar();
+    }
+
+    public List<Conta> listarPorCpf(String cpf) {
+        return contaGateway.listarPorCpf(cpf);
+    }
+
 }

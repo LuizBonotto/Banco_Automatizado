@@ -38,4 +38,9 @@ public class ContaGatewayDatabase implements ContaGateway {
     public List<Conta> listar() {
         return contaRepository.findAll();
     }
+
+    @Override
+    public List<Conta> listarPorCpf(String cpf) {
+        return contaRepository.findAllByCpf(cpf);
+    }
 }
