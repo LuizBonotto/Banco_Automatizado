@@ -35,7 +35,7 @@ public class ContaUseCase {
 
         contaGateway.salvar(conta);
 
-        return conta;
+        return contaGateway.buscarPorId(conta.getId());
     }
 
     public BigDecimal depositar (Long id, BigDecimal valor) throws Exception {

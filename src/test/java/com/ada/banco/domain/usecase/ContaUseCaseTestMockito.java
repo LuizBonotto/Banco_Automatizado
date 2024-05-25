@@ -83,6 +83,9 @@ public class ContaUseCaseTestMockito {
     @DisplayName("Criar uma Conta")
     public void deveCriarContaComSucesso() throws Exception {
 
+        //when(contaGateway.salvar(contaTeste)).thenReturn(contaTeste);
+        when(contaGateway.buscarPorId(any())).thenReturn(contaTeste);
+
         Conta contaCriada = contaUseCase.criar(contaTeste);
 
         Assertions.assertEquals(contaTeste, contaCriada);
