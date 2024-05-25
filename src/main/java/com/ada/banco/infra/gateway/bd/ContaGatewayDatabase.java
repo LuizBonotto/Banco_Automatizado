@@ -15,11 +15,6 @@ public class ContaGatewayDatabase implements ContaGateway {
     }
 
     @Override
-    public Conta buscarPorCpf(String cpf) {
-        return contaRepository.findByCpf(cpf);
-    }
-
-    @Override
     public Conta salvar(Conta conta) {
         return contaRepository.save(conta);
     }

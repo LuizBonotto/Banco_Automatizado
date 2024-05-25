@@ -12,10 +12,6 @@ public class ContaGatewayDatabaseFake implements ContaGateway {
 
     public static Map<Long, Conta> contaRepositoryFake = new HashMap<>();
 
-    @Override
-    public Conta buscarPorCpf(String cpf) {
-        return contaRepositoryFake.get(cpf);
-    }
 
     @Override
     public Conta salvar(Conta conta) {

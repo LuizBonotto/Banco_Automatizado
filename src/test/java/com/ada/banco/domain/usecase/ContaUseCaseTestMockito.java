@@ -17,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -83,8 +85,7 @@ public class ContaUseCaseTestMockito {
     @DisplayName("Criar uma Conta")
     public void deveCriarContaComSucesso() throws Exception {
 
-        //when(contaGateway.salvar(contaTeste)).thenReturn(contaTeste);
-        when(contaGateway.buscarPorId(any())).thenReturn(contaTeste);
+        when(contaGateway.salvar(contaTeste)).thenReturn(contaTeste);
 
         Conta contaCriada = contaUseCase.criar(contaTeste);
 
@@ -174,6 +175,10 @@ public class ContaUseCaseTestMockito {
                 () -> Assertions.assertEquals(saldoAntigoContaAlvo.add(traferencia), contaAlvo.getSaldo())
         );
 
+        System.out.println("Transacao "+transation+": R$"+ traferencia+" transferidos da conta ID" +
+                contaTeste.getId() + " para a conta ID" + contaAlvo.getId());
+
+
     }
 
     @Test
@@ -204,6 +209,55 @@ public class ContaUseCaseTestMockito {
 
         Assertions.assertEquals("As contas são diferentes", throwable.getMessage());
 
+    }
+
+    @Test
+    @DisplayName("Buscar Contas por CPF")
+    public void deveBuscarPorCPF() throws Exception {
+        Conta conta1 =
+                new Conta(2L, 2L, 3L, BigDecimal.ZERO, "Henrique", "000.000.000-01");
+        Conta conta2 =
+                new Conta(3L, 2L, 3L, BigDecimal.valueOf(2000.50), "Henrique", "000.000.000-01");
+
+        when(contaGateway.salvar(contaTeste)).thenReturn(contaTeste);
+
+        contaUseCase.criar(contaTeste);
+        contaUseCase.criar(conta1);
+        contaUseCase.criar(conta2);
+
+        List<Conta> contas = new ArrayList<>();
+        contas.add(contaTeste);
+        contas.add(conta1);
+        contas.add(conta2);
+
+        String cpf = "000.000.000-01";
+
+        List<Conta> contasFiltradas = new ArrayList<>();
+        for (Conta c : contas) {
+            if (c.getCpf().equals(cpf)) {
+                    contasFiltradas.add(c);
+            }
+        }
+
+        when(contaGateway.listarPorCpf(cpf)).thenReturn(contasFiltradas);
+        when(contaGateway.listar()).thenReturn(contas);
+
+        List<Conta> contasListadas = contaUseCase.listar();
+        List<Conta> contasListaFiltradas = contaUseCase.listarPorCpf(cpf);
+
+        Assertions.assertTrue(contasListadas.containsAll(contasListaFiltradas));
+        Assertions.assertFalse(contasFiltradas.containsAll(contasListadas));
+
+    }
+
+    @Test
+    @DisplayName("Não localizou o CPF")
+    void deveLancarExceptionAoNaoLocalizarCPF() {
+
+        Throwable throwable = Assertions.assertThrows(ContaNaoExisteException.class,
+                () -> contaUseCase.listarPorCpf("000.000.000-02"));
+
+        Assertions.assertEquals("A conta com CPF: 000.000.000-02 não existe", throwable.getMessage());
     }
 }
 

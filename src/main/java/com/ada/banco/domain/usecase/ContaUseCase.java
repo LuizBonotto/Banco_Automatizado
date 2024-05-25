@@ -33,9 +33,7 @@ public class ContaUseCase {
 
         emailGateway.send(conta.getCpf());
 
-        contaGateway.salvar(conta);
-
-        return contaGateway.buscarPorId(conta.getId());
+        return contaGateway.salvar(conta);
     }
 
     public BigDecimal depositar (Long id, BigDecimal valor) throws Exception {
