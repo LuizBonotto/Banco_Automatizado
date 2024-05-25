@@ -63,7 +63,7 @@ public class ContaUseCase {
 
     private void verificaSaldoParaSaque(Conta conta, BigDecimal saque) throws Exception {
         verificaContaPorId(conta.getId());
-        if(conta.getSaldo().compareTo(saque) <= 0) {
+        if(conta.getSaldo().compareTo(saque) < 0) {
             throw new ContaSaldoInsuficienteException("A conta com ID: " + conta.getId() + " não possui o saldo para saque");
         }
     }
@@ -86,7 +86,6 @@ public class ContaUseCase {
         if (id != contaNova.getId()) {
             throw new ContasDiferentesException("As contas são diferentes");
         }
-        System.out.println("cheogu");
         contaGateway.atualizar(contaNova);
 
         return contaGateway.buscarPorId(id);
