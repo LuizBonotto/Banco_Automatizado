@@ -34,7 +34,6 @@ public class ContaUseCaseTestH2 {
     @Autowired
     private ContaRepository contaRepository;
 
-
     @BeforeEach
     public void setUp() {
         contaGateway = new ContaGatewayDatabase(contaRepository);

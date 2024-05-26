@@ -1,5 +1,6 @@
 package com.ada.banco.infra.controller;
 
+import com.ada.banco.domain.gateway.ContaGateway;
 import com.ada.banco.domain.model.Conta;
 import com.ada.banco.domain.usecase.ContaUseCase;
 import com.ada.banco.infra.gateway.bd.ContaRepository;
@@ -34,18 +35,25 @@ public class ContaControllerTest {
 
     @Autowired
     private ContaController contaController;
+
     @Autowired
     private ContaUseCase contaUseCase;
+
+    @Autowired
+    ContaGateway contaGateway;
+
+    private Conta contaTest;
 
     @BeforeEach
     void beforeEach() {
         contaRepository.deleteAll();
+        contaTest = new Conta(1L, 2L, 3L, BigDecimal.valueOf(0,2), "Luiz Teste", "000.000.000-00");
     }
 
     @Test
     void criarConta_ComSucesso_DeveRetornarStatus201() throws Exception {
         // Arrange
-        String requestBody = objectMapper.writeValueAsString(new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123456789"));
+        String requestBody = objectMapper.writeValueAsString(contaTest);
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders
@@ -54,17 +62,17 @@ public class ContaControllerTest {
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
 
-        Conta conta = contaRepository.findByCpf("123456789");
+        Conta conta = contaGateway.buscarPorId(1L);
         Assertions.assertNotNull(conta);
+        Assertions.assertEquals("Luiz Teste", conta.getTitular());
     }
 
     @Test
     void criarConta_JaExistente_DeveRetornarStatusBadRequest() throws Exception {
         // Arrange
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123456789");
-        String requestBody = objectMapper.writeValueAsString(conta);
+        String requestBody = objectMapper.writeValueAsString(contaTest);
 
-        contaRepository.save(conta);
+        contaController.criarConta(contaTest);
 
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders
@@ -77,24 +85,23 @@ public class ContaControllerTest {
 
     @Test
     void criarConta_ComSucesso_DeveSalvarAConta() throws Exception {
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123456789");
-
         // when
-        contaController.criarConta(conta);
+        contaController.criarConta(contaTest);
 
         // then
-        Conta contaCriada = contaRepository.findByCpf("123456789");
-        Assertions.assertEquals("Pedro", contaCriada.getTitular());
+        List<Conta> contasCriadas = contaGateway.listarPorCpf("000.000.000-00");
+        Assertions.assertTrue(contasCriadas.contains(contaTest));
     }
 
     @Test
     @DisplayName("Lista contas com mesmo CPF")
     void deveListarContasComMesmoCPF() throws Exception {
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
-        Conta conta1 = new Conta(2L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
-        Conta conta2 = new Conta(3L, 2L, 4L, BigDecimal.ZERO, "João", "123.456.789-01");
+        Conta conta = new Conta(2L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
+        Conta conta1 = new Conta(3L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
+        Conta conta2 = new Conta(4L, 2L, 4L, BigDecimal.ZERO, "João", "123.456.789-01");
 
         // when
+        contaController.criarConta(contaTest);
         contaController.criarConta(conta);
         contaController.criarConta(conta1);
         contaController.criarConta(conta2);
@@ -109,11 +116,12 @@ public class ContaControllerTest {
     @Test
     @DisplayName("Listar todas as contas")
     void deveListarTodasAsContas() throws Exception {
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
-        Conta conta1 = new Conta(2L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
-        Conta conta2 = new Conta(3L, 2L, 4L, BigDecimal.ZERO, "João", "123.456.789-01");
+        Conta conta = new Conta(2L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
+        Conta conta1 = new Conta(3L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
+        Conta conta2 = new Conta(4L, 2L, 4L, BigDecimal.ZERO, "João", "123.456.789-01");
 
         // when
+        contaController.criarConta(contaTest);
         contaController.criarConta(conta);
         contaController.criarConta(conta1);
         contaController.criarConta(conta2);
@@ -123,15 +131,17 @@ public class ContaControllerTest {
                         .get("/contas/listar")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(3));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(4))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].titular").value(contaTest.getTitular()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].titular").value(conta.getTitular()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[3].titular").value(conta2.getTitular()));
     }
 
     @Test
     @DisplayName("Exception não achou conta")
     void deveLancarExceptionAoNaoLocalizarConta() throws Exception{
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro", "123.456.789-00");
         // when
-        contaController.criarConta(conta);
+        contaController.criarConta(contaTest);
         // then
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/contas/listar/{cpf}", "123.456.789-01")
@@ -139,27 +149,55 @@ public class ContaControllerTest {
                         .andExpect(MockMvcResultMatchers.status().isNotFound())
                         .andExpect(MockMvcResultMatchers.content()
                         .string("A conta com CPF: 123.456.789-01 não existe"));
-
-
-
     }
     @Test
     @DisplayName("Atualizar a conta")
     void deveAtualizarConta() throws Exception {
-        Conta conta = new Conta(1L, 2L, 3L, BigDecimal.ZERO, "Pedro Errado", "123.456.789-00");
-        contaUseCase.criar(conta);
+        contaController.criarConta(contaTest);
 
-        conta.setTitular("Pedro Certo");
-        String requestBody = objectMapper.writeValueAsString(conta);
+        contaTest.setTitular("Luiz Atualizado");
+        String requestBody = objectMapper.writeValueAsString(contaTest);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .put("/contas/atualizar")
+                .put("/contas/atualizar/{id}",1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.titular").value("Luiz Atualizado"));
 
-        Conta contaAtualizada = contaRepository.findByIdEquals(1L);
-        Assertions.assertEquals("Pedro Certo", contaAtualizada.getTitular());
+        Conta contaAtualizada = contaGateway.buscarPorId(1L);
+        Assertions.assertEquals("Luiz Atualizado", contaAtualizada.getTitular());
 
+    }
+
+    @Test
+    @DisplayName("Falha ao atualizar uma conta indexistente")
+    void deveRetornarNotFoundQuandoContaNaoExiste() throws Exception {
+        Conta contaAtualizada = new Conta(99L, 2L, 3L, BigDecimal.valueOf(1000), "Conta Inexistente", "000.000.000-00");
+
+        String requestBody = objectMapper.writeValueAsString(contaAtualizada);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/atualizar/{id}",contaAtualizada.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string("A conta com ID: "+ contaAtualizada.getId() +" não existe"));
+    }
+
+    @Test
+    @DisplayName("Falha ao atualizar uma conta com dados conflitantes")
+    void deveRetornarConflictQuandoDadosConflitantes() throws Exception {
+        contaController.criarConta(contaTest);
+
+        contaTest.setId(2L);
+        String requestBody = objectMapper.writeValueAsString(contaTest);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/atualizar/{id}",1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andExpect(MockMvcResultMatchers.content().string("As contas são diferentes"));
     }
 }

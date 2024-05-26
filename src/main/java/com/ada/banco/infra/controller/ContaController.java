@@ -1,6 +1,7 @@
 package com.ada.banco.infra.controller;
 
 import com.ada.banco.domain.exception.ContaNaoExisteException;
+import com.ada.banco.domain.exception.ContasDiferentesException;
 import com.ada.banco.domain.model.Conta;
 import com.ada.banco.domain.usecase.ContaUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,14 +51,16 @@ public class ContaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novaConta);
     }
 
-    @PutMapping("/atualizar")
-    public ResponseEntity atualizar(@RequestBody Conta conta) throws Exception {
-        Long id = conta.getId();
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity atualizar(@PathVariable Long id, @RequestBody Conta conta) throws Exception {
+
         try {
             Conta contaAtualizada = contaUseCase.atualizar(id, conta);
             return ResponseEntity.ok(contaAtualizada);
         } catch (ContaNaoExisteException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (ContasDiferentesException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 }
