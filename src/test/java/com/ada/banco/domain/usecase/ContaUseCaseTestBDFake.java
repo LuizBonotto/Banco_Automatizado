@@ -37,6 +37,12 @@ public class ContaUseCaseTestBDFake {
         Conta contaSalva = contaGatewayDatabaseFake.buscarPorId(conta.getId());
 
         Assertions.assertEquals(conta, contaSalva);
+
+        String string = conta.toString();
+        Assertions.assertTrue(string.contains("Luiz"));
+
+        int hashCode = conta.hashCode();
+        Assertions.assertEquals(hashCode, contaSalva.hashCode());
     }
 
     @Test

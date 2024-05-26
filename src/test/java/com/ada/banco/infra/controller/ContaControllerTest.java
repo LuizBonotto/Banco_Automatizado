@@ -37,9 +37,6 @@ public class ContaControllerTest {
     private ContaController contaController;
 
     @Autowired
-    private ContaUseCase contaUseCase;
-
-    @Autowired
     ContaGateway contaGateway;
 
     private Conta contaTest;
@@ -156,6 +153,10 @@ public class ContaControllerTest {
         contaController.criarConta(contaTest);
 
         contaTest.setTitular("Luiz Atualizado");
+        contaTest.setCpf("000.000.000-01");
+        contaTest.setAgencia(10L);
+        contaTest.setDigito(9L);
+
         String requestBody = objectMapper.writeValueAsString(contaTest);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -166,7 +167,16 @@ public class ContaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.titular").value("Luiz Atualizado"));
 
         Conta contaAtualizada = contaGateway.buscarPorId(1L);
-        Assertions.assertEquals("Luiz Atualizado", contaAtualizada.getTitular());
+
+        Assertions.assertAll ("Verificando a conta salva",
+                () -> Assertions.assertTrue(contaAtualizada.equals(contaTest)), //para chamar o metodo equals da conta
+                () -> Assertions.assertEquals("Luiz Atualizado", contaAtualizada.getTitular()),
+                () -> Assertions.assertEquals(9L, contaAtualizada.getDigito()),
+                () -> Assertions.assertEquals(10L, contaAtualizada.getAgencia()),
+                () -> Assertions.assertEquals("000.000.000-01", contaAtualizada.getCpf())
+
+        );
+
 
     }
 
@@ -199,5 +209,94 @@ public class ContaControllerTest {
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isConflict())
                 .andExpect(MockMvcResultMatchers.content().string("As contas são diferentes"));
+    }
+
+    @Test
+    @DisplayName("Transferir valor entre contas com sucesso")
+    void deveTransferirValorEntreContas() throws Exception {
+        contaTest.setSaldo(BigDecimal.valueOf(1000.25));
+        contaController.criarConta(contaTest);
+        Conta contaOrigem = contaGateway.buscarPorId(1L);
+
+        Conta contaDestino = new Conta(2L, 2L, 2L, BigDecimal.valueOf(500.72), "Conta Destino", "222.222.222-22");
+        contaController.criarConta(contaDestino);
+
+        BigDecimal valorTransferencia = BigDecimal.valueOf(200);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/transferir")
+                        .param("idOut", contaOrigem.getId().toString())
+                        .param("idIn", contaDestino.getId().toString())
+                        .param("valor", valorTransferencia.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        // Verificação dos saldos após a transferência
+        Conta contaOrigemAtualizada = contaGateway.buscarPorId(contaOrigem.getId());
+        Conta contaDestinoAtualizada = contaGateway.buscarPorId(contaDestino.getId());
+
+        Assertions.assertEquals(BigDecimal.valueOf(800.25), contaOrigemAtualizada.getSaldo());
+        Assertions.assertEquals(BigDecimal.valueOf(700.72), contaDestinoAtualizada.getSaldo());
+    }
+
+    @Test
+    @DisplayName("Falha ao não localizar uma conta para Transferência")
+    void deveRetornarNotFoundQuandoTransferenciaNaoExiste() throws Exception {
+
+        contaTest.setSaldo(BigDecimal.valueOf(2000));
+        contaController.criarConta(contaTest);
+
+        Long idContaInexistente = 9999L;
+        Long idContaExistente = contaGateway.buscarPorId(contaTest.getId()).getId();
+        BigDecimal valorTransferencia = BigDecimal.valueOf(100);
+
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/transferir")
+                        .param("idOut", idContaInexistente.toString())
+                        .param("idIn", idContaExistente.toString())
+                        .param("valor", valorTransferencia.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string("A conta com ID: "+ idContaInexistente +" não existe"));
+
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/transferir")
+                        .param("idOut", idContaExistente.toString())
+                        .param("idIn", idContaInexistente.toString())
+                        .param("valor", valorTransferencia.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string("A conta com ID: "+ idContaInexistente +" não existe"));
+
+    }
+
+    @Test
+    @DisplayName("Falha ao não possuir saldo para Transferência")
+    void deveRetornarBadRequestQuandoSaldoInsuficienteTransferencia() throws Exception {
+
+        contaTest.setSaldo(BigDecimal.valueOf(1000));
+        contaController.criarConta(contaTest);
+
+        contaTest.setId(2L);
+        contaController.criarConta(contaTest);
+
+        Conta contaOrigem = contaGateway.buscarPorId(1L);
+        Conta contaDestino = contaGateway.buscarPorId(2L);
+
+        BigDecimal valorTransferencia = BigDecimal.valueOf(2000);
+
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/contas/transferir")
+                        .param("idOut", contaOrigem.getId().toString())
+                        .param("idIn", contaDestino.getId().toString())
+                        .param("valor", valorTransferencia.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().string("A conta com ID: " + contaOrigem.getId() + " não possui o saldo para saque"));
+
+
     }
 }

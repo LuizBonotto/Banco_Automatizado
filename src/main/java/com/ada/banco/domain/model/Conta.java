@@ -33,13 +33,6 @@ public class Conta {
         this.cpf = cpf;
     }
 
-    public Conta(Long agencia, Long digito, BigDecimal saldo, String titular, String cpf) {
-        this.agencia = agencia;
-        this.digito = digito;
-        this.saldo = saldo;
-        this.titular = titular;
-        this.cpf = cpf;
-    }
 
     public Long getId() {
         return id;
